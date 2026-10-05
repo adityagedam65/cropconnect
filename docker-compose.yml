@@ -1,0 +1,89 @@
+# =============================================================================
+# LOCAL DEVELOPMENT ONLY — DO NOT USE IN PRODUCTION
+# =============================================================================
+# This file uses placeholder values for secrets and passwords.
+# Running this in production exposes your database and API to attackers.
+#
+# For production, deploy via:
+#   Backend  → Railway (set all env vars in Railway dashboard)
+#   Frontend → Vercel  (set all env vars in Vercel dashboard)
+#
+# Required secrets that MUST be rotated before any production use:
+#   CROP_DATA_SECRET_KEY       — generate with: python -c "import secrets; print(secrets.token_urlsafe(48))"
+#   CROP_AUTH_TOKEN_SECRET     — generate with: python -c "import secrets; print(secrets.token_urlsafe(48))"
+#   ESP32_API_KEY              — generate with: python -c "import secrets; print(secrets.token_hex(32))"
+#   MYSQL_ROOT_PASSWORD        — use a strong random password
+#   MYSQL_PASSWORD             — use a strong random password (different from root)
+# =============================================================================
+
+services:
+  mongodb:
+    image: mongo:8.0
+    env_file: .env.docker
+    environment:
+      MONGO_INITDB_DATABASE: cropconnect
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb-data:/data/db
+    healthcheck:
+      test: ["CMD-SHELL", "mongosh --quiet --eval 'db.runCommand({ ping: 1 }).ok' localhost:27017/cropconnect"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      default:
+        aliases:
+          - db
+
+  backend:
+    image: python:3.12-slim
+    working_dir: /app/cropconnect-backend
+    volumes:
+      - .:/app
+    env_file: .env.docker
+    environment:
+      MONGODB_URI: mongodb://mongodb:27017
+      MONGODB_DATABASE: cropconnect
+      FRONTEND_PUBLIC_URL: http://localhost:3000
+      ESP32_GET_WRITE_ENABLED: "true"
+      QUERY_API_KEY_ENABLED: "true"
+      # DEV ONLY — never set true in production. Global key bypasses per-device auth.
+      ALLOW_GLOBAL_ESP32_API_KEY: "true"
+      PUBLIC_TRANSLATION_ENABLED: "false"
+      PUBLIC_RATE_LIMIT_DB_FAIL_OPEN: "true"
+      GEMINI_API_KEY: ""
+      GEMINI_MODEL: gemini-2.5-flash
+      DATA_GOV_API_KEY: ${DATA_GOV_API_KEY}
+    command: >
+            sh -c "pip install --no-cache-dir --index-url https://download.pytorch.org/whl/cpu torch==2.5.1+cpu torchvision==0.20.1+cpu &&
+              sed '/^xgboost==/d' requirements.txt > /tmp/requirements.txt &&
+              pip install --no-cache-dir -r /tmp/requirements.txt &&
+              pip install --no-cache-dir --no-deps xgboost==3.1.3 &&
+             python migrate_db.py &&
+             uvicorn app:app --host 0.0.0.0 --port 8001"
+    ports:
+      - "8001:8001"
+    depends_on:
+      mongodb:
+        condition: service_healthy
+
+  frontend:
+    image: node:22-alpine
+    working_dir: /app/cropconnect-frontend
+    volumes:
+      - .:/app
+      - frontend-node-modules:/app/cropconnect-frontend/node_modules
+    env_file: .env.docker
+    environment:
+      VITE_BACKEND_URL: http://localhost:8001
+      VITE_PUBLIC_TRANSLATION_ENABLED: "false"
+    command: sh -c "npm ci && npm run start -- --host 0.0.0.0"
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+
+volumes:
+  mongodb-data:
+  frontend-node-modules:

@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <rect width="1200" height="630" fill="#1B4332"/>
+  <rect x="0" y="0" width="1200" height="630" fill="#1B4332" opacity="0.9"/>
+  <path d="M0 420 C200 380 400 410 600 370 C800 330 1000 360 1200 320 L1200 630 L0 630 Z" fill="#2D6A4F" opacity="0.6"/>
+  <path d="M0 480 C200 440 400 468 600 432 C800 396 1000 420 1200 390 L1200 630 L0 630 Z" fill="#1B4332" opacity="0.8"/>
+  <circle cx="600" cy="240" r="80" fill="#FDFBF7" opacity="0.95"/>
+  <path d="M600 190 C570 210 555 240 560 270 C575 255 595 248 615 250 C620 225 615 200 600 190 Z" fill="#1B4332"/>
+  <path d="M600 190 C630 210 645 240 640 270 C625 255 605 248 585 250 C580 225 585 200 600 190 Z" fill="#2D6A4F"/>
+  <text x="600" y="360" text-anchor="middle" font-family="Georgia, serif" font-size="72" font-weight="400" fill="#FDFBF7" letter-spacing="-2">CropConnect</text>
+  <text x="600" y="410" text-anchor="middle" font-family="Arial, sans-serif" font-size="28" fill="#FDFBF7" opacity="0.7">Smart Farming Dashboard</text>
+</svg>

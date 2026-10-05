@@ -1,0 +1,1 @@
+"""Model adapters used by the vision services."""
