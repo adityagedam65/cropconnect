@@ -54,6 +54,13 @@ def api_health():
     return database_health_status()
 
 
+@router.get("/api/health/live")
+@router.get("/health/live")
+def health_live():
+    """Lightweight liveness check for load balancers (only confirms process is running)."""
+    return {"status": "ok", "live": True, "service": "cropconnect-backend"}
+
+
 @router.get("/")
 def root():
     return {

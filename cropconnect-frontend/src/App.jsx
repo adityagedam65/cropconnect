@@ -18,6 +18,7 @@ const Dashboard = lazy(() => import("./pages/Dashboard"));
 const CropPlanner = lazy(() => import("./pages/CropPlanner"));
 const CropScanPage = lazy(() => import("./pages/CropScanPage"));
 const LegalPage = lazy(() => import("./pages/LegalPage"));
+const DesignSystemPage = lazy(() => import("./pages/DesignSystemPage"));
 const NotFoundPage = lazy(() => import("./pages/NotFoundPage"));
 
 export { AUTH_CACHE_KEY } from "./lib/api";
@@ -100,6 +101,7 @@ function App() {
               <Route path="/dashboard" element={<ProtectedPage><Dashboard /></ProtectedPage>} />
               <Route path="/crop-planner" element={<ProtectedPage><CropPlanner /></ProtectedPage>} />
               <Route path="/crop-scan" element={<CropScanPage />} />
+              <Route path="/design" element={<DesignSystemPage />} />
               <Route path="*" element={<NotFoundPage />} />
             </Routes>
           </Suspense>

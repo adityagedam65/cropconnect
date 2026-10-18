@@ -95,3 +95,41 @@ def auth_profile_update(payload: AuthProfileUpdateIn, current_user: tuple[int, s
     row = update_user(current_user[0], updates)
     if not row: raise HTTPException(status_code=404, detail="User not found")
     return {"ok": True, "user": user_row_to_payload(row)}
+
+
+@router.get("/api/auth/export-data")
+def auth_export_data(current_user: tuple[int, str] = Depends(get_current_user)):
+    """Data portability export (JSON) per DPDP Act 2023 & Layer 10d."""
+    user = load_owner_profile(current_user[0])
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    # Return user profile and metadata in clean, non-encrypted readable format for the data owner
+    return {
+        "ok": True,
+        "exported_at": datetime.now(timezone.utc).isoformat(),
+        "user_profile": user,
+        "data_retention_policy": "Telemetry retained 90 days; profile retained until account deletion.",
+    }
+
+
+@router.post("/api/auth/delete-account")
+def auth_delete_account(response: Response, current_user: tuple[int, str] = Depends(get_current_user)):
+    """Right to erasure: anonymise and mark user account for deletion per DPDP Act 2023 & Layer 10d."""
+    user_id = current_user[0]
+    # Anonymise sensitive fields
+    anonymised_data = {
+        "name": encrypt_text("Deleted User"),
+        "phone": encrypt_text(""),
+        "location": encrypt_text(""),
+        "state": encrypt_text(""),
+        "district": encrypt_text(""),
+        "city": encrypt_text(""),
+        "village": encrypt_text(""),
+        "email_verified": False,
+    }
+    update_user(user_id, anonymised_data)
+    clear_auth_cookie(response)
+    return {
+        "ok": True,
+        "message": "Account personal data anonymised and session terminated.",
+    }
